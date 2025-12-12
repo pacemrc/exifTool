@@ -1,0 +1,28 @@
+{
+  "name": "exif",
+  "version": "1.0.1",
+  "main": "src/backend/server.js",
+  "scripts": {
+    "dev": "NODE_ENV=development PORT=3000 node src/backend/server.js",
+    "prod": "NODE_ENV=production PORT=8000 node src/backend/server.js",
+    "build": "vite build"
+  },
+  "keywords": [
+    "exif",
+    "image",
+    "metadata"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "本地图像元数据解析工具",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "exif-parser": "^0.1.12",
+    "express": "^4.21.1"
+  },
+  "devDependencies": {
+    "terser": "^5.44.1",
+    "vite": "^7.2.6"
+  }
+}

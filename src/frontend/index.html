@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地图像元数据解析工具</title>
+    <link rel="stylesheet" href="./styles/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+    <script type="module" src="./scripts/core/main.js"></script>
+    </head>
+<body>
+    <div class="container">
+        <header>
+            <h1>本地图像元数据解析工具</h1>
+            <div class="header-controls">
+                <button id="theme-toggle" class="btn btn-primary">切换深色模式</button>
+                <button id="settings-btn" class="btn btn-primary">ExifTool配置</button>
+                <button id="export-csv" class="btn btn-primary">导出CSV</button>
+            </div>
+        </header>
+
+        <div id="settings-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>ExifTool配置</h2>
+                <form id="exittool-form">
+                    <div class="form-group">
+                        <label for="exittool-path">路径：</label>
+                        <div class="input-group">
+                            <input type="text" id="exittool-path" placeholder="请输入ExifTool可执行文件路径">
+                            <button type="button" id="test-exittool" class="btn btn-primary">验证</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="os-select">操作系统：</label>
+                        <select id="os-select">
+                            <option value="windows">Windows</option>
+                            <option value="linux">Linux</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">保存配置</button>
+                    </div>
+                </form>
+                <div id="exittool-status" class="status-message"></div>
+            </div>
+        </div>
+
+        <div id="file-browser-modal" class="modal">
+            <div class="modal-content file-browser-modal">
+                <div class="modal-header">
+                    <h2>文件系统</h2>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="file-browser-content">
+                    <div class="file-browser-header">
+                        <div id="file-browser-path" class="file-path"></div>
+                        <div class="file-browser-actions">
+                            <button id="refresh-btn" class="btn btn-primary">刷新</button>
+                            <button id="select-btn" class="btn btn-primary" disabled>选择</button>
+                        </div>
+                    </div>
+                    <div id="file-browser-body" class="file-browser-body">
+                        <div id="file-list-container" class="file-list-container">
+                            <div id="file-items" class="file-items"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="upload-section">
+            <div class="path-input-section" style="margin-bottom: 20px; background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
+                <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 18px; color: #2c3e50;">指定路径</h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="text" id="path-input" placeholder="请输入文件或文件夹路径" style="flex: 1; min-width: 300px; padding: 12px 15px; border: 2px solid #667eea; border-radius: 8px; font-size: 14px; transition: all 0.3s ease;">
+                    <button id="browse-path-btn" class="btn btn-primary">浏览</button>
+                    <button id="query-path-btn" class="btn btn-primary">解析</button>
+                </div>
+                <div style="margin-top: 10px; font-size: 12px; color: #7f8c8d;">
+                    <p>支持格式：JPEG、PNG、TIFF、HEIC以及各种RAW格式（CR2、CR3、NEF等）</p>
+                </div>
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center;">
+                <span id="parse-status" style="font-size: 14px; color: #666;"></span>
+            </div>
+            <div id="upload-progress" class="progress-container" style="display: none; margin-top: 15px;">
+                <div class="progress-bar"></div>
+                <div class="progress-text">0% - 处理中...</div>
+            </div>
+        </section>
+
+        <section class="filter-section property-categories" style="margin-top: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <h3 style="margin: 0; font-size: 16px; color: #2c3e50;">选择查询属性</h3>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="selected-count" style="font-size: 14px; color: #667eea; font-weight: 600;">已选择 <span id="selected-prop-count">0</span> 个属性</span>
+                        <label class="category-header" style="margin: 0;">
+                            <input type="checkbox" id="all-properties" class="category-main" style="transform: scale(1.2); accent-color: #667eea;">
+                            <span class="category-name" style="font-weight: 600;">全部属性</span>
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <button id="expand-all" class="btn btn-primary">全部展开</button>
+                          <button id="collapse-all" class="btn btn-primary">全部折叠</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-groups">
+                    <div class="category-group">
+                        <label class="category-header">
+                            <input type="checkbox" class="category-main" data-category="common" checked>
+                            <span class="category-name">常用属性</span>
+                            <span class="category-count"></span>
+                            <span class="category-toggle">▼</span>
+                        </label>
+                        <div class="category-items show">
+                            <label><input type="checkbox" class="category-item" data-category="common" data-prop="Make"> 相机制造商</label>
+                            <label><input type="checkbox" class="category-item" data-category="common" data-prop="Model"> 相机型号</label>
+                            <label><input type="checkbox" class="category-item" data-category="common" data-prop="LensModel"> 镜头型号</label>
+                            <label><input type="checkbox" class="category-item" data-category="common" data-prop="FNumber"> 光圈值</label>
+                            <label><input type="checkbox" class="category-item" data-category="common" data-prop="ISO"> ISO感光度</label>
+                            <label><input type="checkbox" class="category-item" data-category="common" data-prop="FocalLength"> 焦距</label>
+                            <label><input type="checkbox" class="category-item" data-category="common" data-prop="Flash"> 闪光灯状态</label>
+                            <label><input type="checkbox" class="category-item" data-category="common" data-prop="MeteringMode"> 测光模式</label>
+                            <label><input type="checkbox" class="category-item" data-category="common" data-prop="ExposureProgram"> 曝光程序</label>
+                            <label><input type="checkbox" class="category-item" data-category="common" data-prop="WhiteBalance"> 白平衡</label>
+                            <label><input type="checkbox" class="category-item" data-category="common" data-prop="ExposureCompensation"> 曝光补偿</label>
+                        </div>
+                    </div>
+                    <div class="category-group">
+                        <label class="category-header">
+                            <input type="checkbox" class="category-main" data-category="advanced">
+                            <span class="category-name">高级属性</span>
+                            <span class="category-count"></span>
+                            <span class="category-toggle">▶</span>
+                        </label>
+                        <div class="category-items">
+                            <label><input type="checkbox" class="category-item" data-category="advanced" data-prop="ExposureTime"> 曝光时间</label>
+                            <label><input type="checkbox" class="category-item" data-category="advanced" data-prop="FocalLengthIn35mmFormat"> 35mm等效焦距</label>
+                            <label><input type="checkbox" class="category-item" data-category="advanced" data-prop="Contrast"> 对比度</label>
+                            <label><input type="checkbox" class="category-item" data-category="advanced" data-prop="Saturation"> 饱和度</label>
+                            <label><input type="checkbox" class="category-item" data-category="advanced" data-prop="Sharpness"> 锐度</label>
+                        </div>
+                    </div>
+                    <div class="category-group">
+                        <label class="category-header">
+                            <input type="checkbox" class="category-main" data-category="other">
+                            <span class="category-name">其他属性</span>
+                            <span class="category-count"></span>
+                            <span class="category-toggle">▶</span>
+                        </label>
+                        <div class="category-items">
+                            <label><input type="checkbox" class="category-item" data-category="other" data-prop="GPSLatitude"> GPS纬度</label>
+                            <label><input type="checkbox" class="category-item" data-category="other" data-prop="GPSLongitude"> GPS经度</label>
+                            <label><input type="checkbox" class="category-item" data-category="other" data-prop="SubjectDistance"> 拍摄距离</label>
+                            <label><input type="checkbox" class="category-item" data-category="other" data-prop="DigitalZoomRatio"> 数字变焦比</label>
+                            <label><input type="checkbox" class="category-item" data-category="other" data-prop="SceneCaptureType"> 场景捕获类型</label>
+                            <label><input type="checkbox" class="category-item" data-category="other" data-prop="ImageWidth"> 图像宽度</label>
+                            <label><input type="checkbox" class="category-item" data-category="other" data-prop="ImageHeight"> 图像高度</label>
+                            <label><input type="checkbox" class="category-item" data-category="other" data-prop="Orientation"> 图像方向</label>
+                        </div>
+                    </div>
+                </div>
+        </section>
+
+        <section class="exif-section">
+            <div id="file-list" class="file-list"></div>
+            <div id="exif-table-container" class="table-container">
+                <table id="exif-table" class="exif-table">
+                    <thead>
+                        <tr>
+                            <th>属性名称</th>
+                            <th>属性值</th>
+                        </tr>
+                    </thead>
+                    <tbody id="exif-table-body"></tbody>
+                </table>
+                <div id="no-exif" class="no-data" style="display: none;">
+                    <p>该图片未包含EXIF信息</p>
+                </div>
+                <div id="no-files" class="no-data">
+                    <p>请上传图片文件</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="pagination" id="pagination" style="display: none;">
+            <button id="prev-page" class="btn btn-primary">上一页</button>
+            <span id="page-info">第 1 页，共 1 页</span>
+            <button id="next-page" class="btn btn-primary">下一页</button>
+        </section>
+    </div>
+</body>
+</html>
