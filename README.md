@@ -40,7 +40,7 @@ EXIF元数据解析工具是一款用于提取和管理图像EXIF元数据的Web
 
 1. **克隆项目**
    ```bash
-   git clone <项目仓库地址>
+   git clone https://github.com/pacemrc/movie-website.git
    cd exifTool
    ```
 
@@ -183,17 +183,3 @@ A: 安装并配置ExifTool，系统会自动优先使用ExifTool提取RAW格式�
 
 ### Q: 为什么导出的CSV文件中文显示乱码？
 A: 建议使用支持UTF-8编码的文本编辑器或电子表格软件打开，如Notepad++、Excel等。
-
-## 技术支持
-
-- **项目主页**：<项目GitHub地址>
-- **Issue跟踪**：<项目GitHub Issues地址>
-- **贡献代码**：欢迎提交Pull Request
-
-## 许可证
-
-本项目采用MIT许可证，详见LICENSE文件。
-
-## 更新日志
-
-详见CHANGELOG.md文件。
