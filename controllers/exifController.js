@@ -10,14 +10,13 @@ class ExifController {
     try {
       // 从请求头获取ExifTool配置
       const exittoolConfig = {
-        path: req.headers['x-exiftool-path'] || req.headers['x-exittool-path'] || '',
-        os: req.headers['x-os-type'] || 'windows'
+        path: req.headers['x-exiftool-path'] || req.headers['x-exittool-path'] || ''
       };
       
       // 获取请求体中的路径
-      const { path } = req.body;
+      const { path: requestedPath } = req.body;
       
-      if (!path) {
+      if (!requestedPath) {
         return res.status(400).json({
           success: false,
           message: 'Path is required'
@@ -25,7 +24,7 @@ class ExifController {
       }
       
       // 验证路径安全性
-      if (!this.isPathSafe(path)) {
+      if (!this.isPathSafe(requestedPath)) {
         return res.status(400).json({
           success: false,
           message: 'Invalid path'
@@ -33,7 +32,7 @@ class ExifController {
       }
       
       // 检查路径是否存在
-      if (!fs.existsSync(path)) {
+      if (!fs.existsSync(requestedPath)) {
         return res.status(404).json({
           success: false,
           message: 'Path not found'
@@ -43,14 +42,14 @@ class ExifController {
       const results = [];
       
       // 获取路径状态
-      const stats = fs.statSync(path);
+      const stats = fs.statSync(requestedPath);
       
       if (stats.isFile()) {
         // 处理单个文件
-        await this.processSingleFile(path, exittoolConfig, results);
+        await this.processSingleFile(requestedPath, exittoolConfig, results);
       } else if (stats.isDirectory()) {
         // 处理文件夹
-        await this.processDirectory(path, exittoolConfig, results);
+        await this.processDirectory(requestedPath, exittoolConfig, results);
       } else {
         return res.status(400).json({
           success: false,
@@ -62,6 +61,9 @@ class ExifController {
       res.json({
         success: true,
         data: results,
+        exportFilename: stats.isDirectory() 
+          ? path.basename(requestedPath) 
+          : path.basename(requestedPath, path.extname(requestedPath)),
         message: `Successfully processed ${results.filter(r => r.success).length} out of ${results.length} files`
       });
     } catch (error) {

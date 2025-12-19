@@ -22,8 +22,7 @@ export async function queryPath(path) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-ExifTool-Path': exittoolConfig.path || '',
-      'X-OS-Type': exittoolConfig.os || 'windows'
+      'X-ExifTool-Path': exittoolConfig.path || ''
     },
     body: JSON.stringify({ path })
   });

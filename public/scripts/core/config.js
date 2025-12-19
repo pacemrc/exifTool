@@ -9,9 +9,7 @@ export function loadConfig() {
   if (saved) {
     exittoolConfig = JSON.parse(saved);
     const p = document.getElementById('exittool-path');
-    const os = document.getElementById('os-select');
     if (p) p.value = exittoolConfig.path || '';
-    if (os) os.value = exittoolConfig.os || 'windows';
   }
   isDarkMode = localStorage.getItem('darkMode') === 'true';
 }
@@ -35,8 +33,7 @@ export function toggleTheme() {
 export function saveExifToolConfig(e) {
   e.preventDefault();
   const path = document.getElementById('exittool-path').value;
-  const os = document.getElementById('os-select').value;
-  exittoolConfig = { path, os };
+  exittoolConfig = { path };
   localStorage.setItem('exittoolConfig', JSON.stringify(exittoolConfig));
   showExifToolStatus('保存成功', 'success');
 }

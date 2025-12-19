@@ -3,18 +3,19 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const exifController = require('./controllers/exifController');
-require('dotenv').config({ path: path.join(__dirname, '../../.env') });
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 // 创建Express应用
 const app = express();
 
-// 设置端口与静态目录（开发默认3000，生产未指定时使用随机可用端口）
-const isDev = process.env.NODE_ENV === 'development';
-const STATIC_DIR = process.env.STATIC_DIR
-  ? path.join(__dirname, '../../', process.env.STATIC_DIR)
-  : (isDev ? path.join(__dirname, '../../src/frontend') : path.join(__dirname, '../../dist'));
-const RUN_DIR = process.env.RUN_DIR ? path.join(__dirname, '../../', process.env.RUN_DIR) : path.join(__dirname, '../../run');
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : (isDev ? 3000 : 0);
+// 设置模板引擎
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// 设置端口与静态目录
+const STATIC_DIR = path.join(__dirname, 'public');
+const RUN_DIR = process.env.RUN_DIR ? path.join(__dirname, process.env.RUN_DIR) : path.join(__dirname, 'run');
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 // 配置CORS中间件，从环境变量中读取允许的来源
 const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['*'];
@@ -38,9 +39,8 @@ app.use(express.json());
 // 配置URL编码中间件
 app.use(express.urlencoded({ extended: true }));
 
+// 静态文件服务
 app.use(express.static(STATIC_DIR));
-
-// 已移除通过配置文件的前端配置输出，前端默认与当前域名同源使用 /api
 
 // 配置路径查询API路由
 app.post('/api/exif/query-path', 
@@ -57,13 +57,18 @@ app.post('/api/system/validate-path',
   (req, res) => exifController.validateExecutablePath(req, res)
 );
 
+// 根路径渲染模板
 app.get('/', (req, res) => {
-  res.sendFile(path.join(STATIC_DIR, 'index.html'));
+  res.render('index');
 });
 
 // 配置404处理
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found' });
+  if (req.accepts('html')) {
+    res.status(404).render('index');
+  } else {
+    res.status(404).json({ success: false, message: 'Route not found' });
+  }
 });
 
 // 配置全局错误处理
@@ -76,8 +81,5 @@ app.use((err, req, res, next) => {
 const server = app.listen(PORT, () => {
   const actualPort = server.address().port;
   console.log(`\n🚀 Server running on http://localhost:${actualPort}`);
-  console.log(`📁 Static files served from: ${STATIC_DIR}`);
-  console.log(`📡 API endpoint: http://localhost:${actualPort}/api/exif/query-path`);
-  console.log(`🔧 Metadata extractor: ExifTool`);
   console.log('\nPress Ctrl+C to stop the server\n');
 });

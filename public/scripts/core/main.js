@@ -3,7 +3,7 @@ import { initializeFileBrowser, openFileBrowser } from '../components/fileBrowse
 import { setupCategoryFilters, expandAllCategories, collapseAllCategories, selectedProps } from '../components/filters.js';
 import { preCountFiles, queryPath } from '../api/api.js';
 import { startProgress, finishProgress } from '../components/progress.js';
-import { setFiles, displayFileList, displayExifData, changePage, sortTable, getFiles } from '../utils/view.js';
+import { setFiles, displayFileList, displayExifData, changePage, sortTable, getFiles, setDirectoryName, getDirectoryName } from '../utils/view.js';
 import { exportToCSV } from '../utils/csvExport.js';
 import { showMessage } from '../components/ui.js';
 import { initAppConfig } from './appConfig.js';
@@ -55,6 +55,9 @@ async function onQueryPath() {
     if (result.success) {
       const files = result.data.map(item => ({ name: item.fileName, exifData: item.exifData }));
       setFiles(files);
+      if (result.exportFilename) {
+        setDirectoryName(result.exportFilename);
+      }
       if (parseStatus) parseStatus.textContent = `已加载 ${files.length} 个文件`;
       displayFileList();
       if (files.length > 0) displayExifData(0);

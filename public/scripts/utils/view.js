@@ -6,6 +6,7 @@ let currentFileIndex = 0;
 let exifData = [];
 let filteredExifData = [];
 let currentPage = 1;
+let currentDirectoryName = '';
 const itemsPerPage = 20;
 
 export function setFiles(files) {
@@ -136,3 +137,11 @@ export function sortTable(columnIndex) {
 }
 
 export function getFiles() { return currentFiles; }
+
+export function setDirectoryName(directoryName) {
+  currentDirectoryName = directoryName;
+}
+
+export function getDirectoryName() {
+  return currentDirectoryName;
+}

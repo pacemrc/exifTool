@@ -26,8 +26,7 @@ class ExifService {
           // exif-parser失败，使用ExifTool
           exifData = await exiftoolService.extractMetadata(
             filePath,
-            exittoolConfig.path,
-            exittoolConfig.os
+            exittoolConfig.path
           );
           extractionMethod = 'exiftool';
         }
@@ -35,8 +34,7 @@ class ExifService {
         // RAW格式文件直接使用ExifTool
         exifData = await exiftoolService.extractMetadata(
           filePath,
-          exittoolConfig.path,
-          exittoolConfig.os
+          exittoolConfig.path
         );
         extractionMethod = 'exiftool';
       }

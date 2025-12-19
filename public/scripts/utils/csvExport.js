@@ -1,5 +1,6 @@
 import { exifDescriptions, commonExifProps } from '../core/constants.js';
 import { showMessage } from '../components/ui.js';
+import { getDirectoryName } from './view.js';
 
 export function exportToCSV(files, selectedProps) {
   const list = files || [];
@@ -28,7 +29,21 @@ export function exportToCSV(files, selectedProps) {
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
-  const fileName = `exif-data-${new Date().toISOString().slice(0, 10)}.csv`;
+  
+  // 获取目录名称作为CSV文件名
+  const directoryName = getDirectoryName() || 'exif-data';
+  
+  // 处理文件名冲突，添加本地时间戳确保唯一性
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const timestamp = `${year}${month}${day}${hours}${minutes}${seconds}`;
+  const fileName = `${directoryName}-${timestamp}.csv`;
+  
   link.setAttribute('href', url);
   link.setAttribute('download', fileName);
   link.style.visibility = 'hidden';

@@ -1,7 +1,7 @@
 const { exec } = require('child_process');
 
 class ExiftoolService {
-  async extractMetadata(filePath, exiftoolPath, osType) {
+  async extractMetadata(filePath, exiftoolPath) {
     return new Promise((resolve, reject) => {
       const binary = exiftoolPath && exiftoolPath.trim() ? exiftoolPath.trim() : 'exiftool';
       const command = `${binary} -json -n "${filePath}"`;
